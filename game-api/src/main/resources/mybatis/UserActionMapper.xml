@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.biostime.swisse.model.bean.UserAction">
+    <resultMap id="actionMap" type="com.biostime.swisse.web.util.bean.UserActionResult" >
+        <result column="startTime" property="startTime" jdbcType="TIMESTAMP" />
+        <result column="endTime" property="endTime" jdbcType="TIMESTAMP" />
+        <result column="createdTime" property="createdTime" jdbcType="TIMESTAMP" />
+        <result column="receivedTime" property="receivedTime" jdbcType="TIMESTAMP" />
+    </resultMap>
+
+    <resultMap id="copyUserActionMap" type="com.biostime.swisse.model.bean.UserAction" >
+        <result column="createdTime" property="createdTime" jdbcType="TIMESTAMP" />
+        <result column="receivedTime" property="receivedTime" jdbcType="TIMESTAMP" />
+        <result column="winningTime" property="winningTime" jdbcType="TIMESTAMP" />
+    </resultMap>
+    <select id="getAll" parameterType="com.biostime.swisse.web.util.bean.QueryActReq" resultMap="actionMap">
+        SELECT a.action_id actionId,
+				a.item_id itemId ,
+				a.activity_id activityId,
+                a.phone,
+                a.action_times actionTimes,
+                a.user_code userCode,
+                a.winning_time createdTime,
+                a.is_winning isWinning,
+                a.address,
+                a.gift_phone giftPhone,
+                a.mail_code mailCode,
+                a.received_name receivedName,
+                a.received_time receivedTime,
+                a.has_received hasReceived,
+                a.activity_name activityName,
+                a.bonus_type bonusType,
+                a.bonus bonus,
+                a.action_times quantity
+        FROM bw_userAction a
+        WHERE  1 =1
+        <if test="phone != null">
+            AND a.phone = #{phone}
+        </if>
+        <if test="userCode != null">
+            AND a.user_code = #{userCode}
+        </if>
+        <if test="isWinning != null">
+            AND a.is_winning = #{isWinning}
+        </if>
+        <if test="hasReceived != null">
+            AND a.has_received = #{hasReceived}
+        </if>
+        <if test="activityName != null">
+            AND a.activity_name = #{activityName}
+        </if>
+        <if test="bonusType != null">
+            AND a.bonus_type = #{bonusType}
+        </if>
+        <if test="bonus!= null">
+            AND a.bonus = #{bonus}
+        </if>
+        <if test="startTime != null">
+            AND a.created_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null">
+            AND a.created_time &lt;= #{endTime}
+        </if>
+        ORDER BY a.created_time DESC
+    </select>
+
+    <select id="getWinningUsers" parameterType="HashMap" resultType="com.biostime.swisse.web.util.bean.Winning">
+        SELECT '' userCode,
+                concat(left(phone, 3), '*****',  right(phone, 3)) phone,
+                bonus_type bonusType,
+                bonus,
+                bonus_name bonusName,
+                date_format(created_time,'%Y-%c-%d %H:%i:%s') time
+        FROM bw_userAction
+        WHERE bonus_type != '未中奖'
+              <if test="phone != null">
+                  AND phone = #{phone}
+              </if>
+                AND activity_id = #{activityId}
+        ORDER BY created_time DESC
+        LIMIT 20
+    </select>
+
+    <select id="queryAllUsers" parameterType="String" resultType="com.biostime.swisse.model.bean.User" >
+        SELECT id, open_id openId, customer_id customerId, gender, mobile
+        FROM bw_user
+        WHERE 1 = 1
+        <if test="openId !=null" >
+            AND open_id = #{openId}
+        </if>
+        ORDER BY id ASC
+    </select>
+
+    <select id="getOneUserAction" parameterType="long" resultMap="copyUserActionMap" >
+        SELECT action_id actionId,
+                item_id itemId,
+                activity_id activityId,
+                phone,
+                action_times actionTimes,
+                user_code userCode,
+                created_time createdTime,
+                is_winning isWinning,
+                address,
+                gift_phone giftPhone,
+                mail_code mailCode,
+                received_name receivedName,
+                received_time receivedTime,
+                has_received hasReceived,
+                updated_by updatedBy,
+                winning_time winningTime,
+                bonus bonus,
+                bonus_type bonusType,
+                system
+        FROM bw_userAction
+        WHERE action_id = #{actionId}
+    </select>
+    <select id="getNoBonusRecord" parameterType="HashMap" resultMap="copyUserActionMap">
+        SELECT action_id actionId,
+                item_id itemId,
+                activity_id activityId,
+                phone,
+                action_times actionTimes,
+                user_code userCode,
+                created_time createdTime,
+                is_winning isWinning,
+                address,
+                gift_phone giftPhone,
+                mail_code mailCode,
+                received_name receivedName,
+                received_time receivedTime,
+                has_received hasReceived,
+                updated_by updatedBy,
+                winning_time winningTime,
+                bonus bonus,
+                bonus_type bonusType,
+                system
+        FROM bw_userAction
+        WHERE bonus_type = '未中奖'
+                AND  DATE_FORMAT(created_time,'%Y-%m-%d') = #{time}
+                AND phone = #{phone} AND activity_id = #{activityId} AND is_pay = #{isPay}
+        ORDER BY action_id
+        LIMIT 1
+    </select>
+
+
+    <insert id="insertUserAction" parameterType="com.biostime.swisse.model.bean.UserAction">
+        INSERT INTO bw_userAction(item_id,
+                activity_id,
+                phone,
+                action_times,
+                user_code,
+                created_time,
+                is_winning,
+                winning_time,
+                received_time,
+                bonus,
+                bonus_type,
+                has_received,
+                activity_name,
+                system,
+                is_pay,
+                used_score,
+                bonus_name
+              )
+        VALUES (#{itemId},
+             #{activityId},
+             #{phone},
+             #{actionTimes},
+             #{userCode},
+             #{createdTime},
+             #{isWinning},
+             #{winningTime},
+             #{receivedTime},
+             #{bonus},
+             #{bonusType},
+             #{hasReceived},
+             #{activityName},
+             #{system}, #{isPay}, #{usedScore}, #{bonusName}
+              )
+    </insert>
+    <update id="updateUserAction" parameterType="com.biostime.swisse.web.util.bean.ActionReq" >
+        UPDATE bw_userAction
+        SET address = #{address},
+            gift_phone = #{giftPhone},
+            is_winning = #{isWinning},
+            mail_code = #{mailCode},
+            received_name = #{receivedName}
+            ,received_time = #{receivedTime}
+            ,winning_time = #{winningTime}
+            <if test="bonus != null">
+                ,bonus = #{bonus}
+            </if>
+            <if test="bonusType != null">
+                ,bonus_type = #{bonusType}
+            </if>
+            <if test="hasReceived != null">
+                ,has_received = #{hasReceived}
+            </if>
+            <if test="updatedBy != null">
+                ,updated_by = #{updatedBy}
+            </if>
+        WHERE action_id = #{actionId}
+    </update>
+
+    <update id="updateUserActionQuantity" parameterType="com.biostime.swisse.model.bean.UserAction" >
+        UPDATE bw_userAction
+        SET action_times = #{actionTimes}
+        WHERE action_id = #{actionId}
+    </update>
+    <update id="updateReceiverInfo" parameterType="com.biostime.swisse.web.util.bean.ReceiverInfoReq">
+        UPDATE bw_userAction
+        SET address = #{address},
+            gift_phone = #{giftPhone},
+            received_name = #{receiverName}
+        WHERE action_id = #{actionId}
+    </update>
+    
+    <select id="getActionId" parameterType="HashMap" resultType="Long" >
+        SELECT action_id
+        FROM bw_userAction
+        WHERE phone = #{phone} AND bonus_type = '商品'
+               AND activity_id = #{activityId}
+        ORDER BY created_time DESC
+        LIMIT 1
+    </select>
+
+    <insert id="createUser" parameterType="com.biostime.swisse.model.bean.User" >
+        INSERT INTO bw_user(open_id, customer_id, gender, mobile, name)
+                     VALUES(#{openId}, #{customerId}, #{gender}, #{mobile}, #{name} )
+    </insert>
+    <insert id="createSubmissionError" parameterType="com.biostime.swisse.model.bean.SubmissionError" >
+        INSERT INTO bw_userError(customer_id, bonus_type, bonus, detail, grid_id, created_time, updated_time)
+        VALUES(#{customerId}, #{bonusType}, #{bonus}, #{detail}, #{gridId}, NOW(), NOW())
+    </insert>
+
+    <delete id="deleteUserAction" parameterType="long">
+        DELETE FROM bw_userAction WHERE action_id =#{actionId}
+    </delete>
+
+    <insert id="copyUserAction" parameterType="com.biostime.swisse.model.bean.UserAction">
+        INSERT INTO log_userAction(
+        action_id,
+        item_id,
+                activity_id,
+                phone,
+                action_times,
+                user_code,
+                created_time,
+                is_winning,
+                address,
+                gift_phone,
+                mail_code,
+                received_name,
+                received_time,
+                has_received,
+                updated_by ,
+                winning_time ,
+                bonus,
+                bonus_type ,
+                system
+              )
+        VALUES (#{actionId},
+                 #{itemId},
+                #{activityId},
+                #{phone},
+                #{actionTimes},
+                #{userCode} ,
+                #{createdTime},
+                #{isWinning} ,
+                #{address},
+                #{giftPhone} ,
+                #{mailCode},
+                #{receivedName} ,
+                #{receivedTime} ,
+                #{hasReceived} ,
+                #{updatedBy},
+                #{winningTime} ,
+                 #{bonus},
+                #{bonusType} ,
+                #{system}
+              )
+    </insert>
+
+    <insert id="logPoints" parameterType="com.biostime.swisse.model.bean.IntegrationPoint">
+        INSERT INTO bw_points(
+                    customer_id	,
+                    status	,
+                    point	,
+                    account_type,
+                    type_id	,
+                    operation_type,
+                    activity_id,
+                    seq_no)
+                    VALUES(
+                    #{customerId},
+                    #{status},
+                    #{point},
+                    #{accountType},
+                    #{typeId},
+                    #{operationType},
+                    #{activityId},
+                    #{seqNo}
+                    )
+    </insert>
+</mapper>

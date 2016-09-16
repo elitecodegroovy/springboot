@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.biostime.swisse.model.bean.BaseInfo">
+    <resultMap id="gridsMap" type="com.biostime.swisse.model.bean.GridItem" >
+        <id column="itemId" property="itemId" />
+        <result column="sequence" property="sequence" />
+        <result column="gridName" property="gridName" />
+        <result column="bonusType" property="bonusType" />
+        <result column="bonus" property="bonus" />
+        <result column="bonusName" property="bonusName" />
+        <result column="bonusPictureUrl" property="bonusPictureUrl" />
+        <result column="webpUrl" property="webpUrl" />
+        <result column="bigTips" property="bigTips" />
+        <result column="freeRate" property="freeRate" />
+        <result column="payRate" property="payRate" />
+        <result column="quantity" property="quantity" />
+        <result column="totalQuantity" property="totalQuantity" />
+        <result column="baId" property="activityId" />
+        <result column="bbTips" property="bigTips" />
+        <result column="bsTips" property="smallTips" />
+    </resultMap>
+
+    <resultMap id="goodTipsMap" type="com.biostime.swisse.model.bean.GoodTips" >
+        <id column="tipId" property="tipId" />
+        <result column="taId" property="activityId" />
+        <result column="bigTips" property="bigTips" />
+        <result column="smallTips" property="smallTips" />
+    </resultMap>
+
+    <resultMap id="detailMap" type="com.biostime.swisse.model.bean.ActivityDetail" >
+        <id column="activityId" property="activityId" />
+        <result column="activityName" property="activityName" />
+        <result column="status" property="status" />
+        <result column="description" property="description" />
+        <result column="usedScore" property="usedScore" />
+        <result column="publishedBy" property="publishedBy" />
+        <result column="freeTimes" property="freeTimes" />
+        <result column="online" property="online" />
+        <result column="activityUrl" property="activityUrl" />
+        <result column="createdBy" property="createdBy" />
+        <result column="system" property="system" />
+        <result column="startTime" property="startTime" jdbcType="TIMESTAMP" />
+        <result column="endTime" property="endTime" jdbcType="TIMESTAMP" />
+        <collection property="grids" resultMap="gridsMap"/>
+        <collection property="goodTips" resultMap="goodTipsMap"/>
+    </resultMap>
+    <resultMap id="activityResultMap" type="com.biostime.swisse.model.bean.BaseInfo" >
+        <result column="startTime" property="startTime" jdbcType="TIMESTAMP" />
+        <result column="endTime" property="endTime" jdbcType="TIMESTAMP" />
+    </resultMap>
+
+    <select id="getAll" parameterType="HashMap" resultMap="activityResultMap">
+        SELECT      activity_id activityId,
+                     activity_name activityName,
+                     start_time startTime,
+                     end_time endTime,
+                     description,
+                     CASE
+                            WHEN NOW() &gt;= end_time   THEN "已结束"
+                            WHEN NOW() &lt;= start_time   THEN "未开始"
+                            WHEN NOW() &gt;= start_time AND NOW() &lt;=end_time AND online = 0  THEN "已停止"
+                            ELSE "进行中"
+                     END status,
+                     published_by publishedBy,
+                     used_score usedScore,
+                     free_times freeTimes,
+                     online,
+                     activity_url activityUrl,
+                     created_by createdBy,
+                     system
+        FROM bw_baseInfo
+        WHERE 1 = 1
+            <if test="activity_name != null">
+                AND activity_name = #{activity_name}
+            </if>
+            <if test="published_by != null">
+                AND published_by = #{published_by}
+            </if>
+            <if test="start_time != null">
+                AND start_time &gt;= #{start_time}
+            </if>
+            <if test="end_time != null">
+                AND end_time &lt;= #{end_time}
+            </if>
+        ORDER BY start_time desc
+    </select>
+
+    <select id="getActivityId" parameterType="String" resultType="long" >
+        SELECT activity_id activityId
+        FROM bw_baseInfo
+        WHERE activity_name = #{activityName}
+    </select>
+
+    <select id="getActivityDetail" parameterType="long" resultMap="detailMap">
+        SELECT a.activity_id activityId,
+			a.activity_name activityName,
+			a.start_time startTime,
+			a.end_time endTime,
+			a.description,
+			a.published_by publishedBy,
+			a.used_score usedScore,
+			a.free_times freeTimes,
+			a.online,
+			a.activity_url activityUrl,
+			a.created_by createdBy,
+			a.system,
+			b.item_id itemId,
+			b.activity_id baId,
+			b.sequence,
+			b.grid_name gridName,
+			b.bonus_type bonusType,
+			b.bonus,
+			b.bonus_name bonusName,
+			b.bonus_pictureUrl bonusPictureUrl,
+			b.webp_url webpUrl,
+			b.big_tips bbTips,
+			b.small_tips bsTips,
+			b.free_rate freeRate,
+			b.pay_rate payRate,
+			b.quantity ,
+			b.total_quantity totalQuantity,
+			c.tip_id tipId,
+			c.activity_id taId,
+			c.big_tips bigTips,
+			c.small_tips smallTips
+        FROM bw_baseInfo a
+             LEFT JOIN bw_gridItem b on a.activity_id = b.activity_id
+             LEFT JOIN bw_goodTips c on a.activity_id = c.activity_id
+        WHERE a.activity_id = #{activityId}
+    </select>
+
+    <select id="getServiceById"  parameterType="long" resultMap="detailMap">
+        SELECT a.activity_id activityId,
+        a.activity_name activityName,
+        a.start_time startTime,
+        a.end_time endTime,
+        a.description,
+        a.published_by publishedBy,
+        a.used_score usedScore,
+        a.free_times freeTimes,
+        a.online,
+        a.activity_url activityUrl,
+        a.created_by createdBy,
+        b.item_id itemId,
+        b.activity_id baId,
+        b.sequence,
+        b.grid_name gridName,
+        b.bonus_type bonusType,
+        b.bonus,
+        b.bonus_name bonusName,
+        b.bonus_pictureUrl bonusPictureUrl,
+        b.webp_url webpUrl,
+        b.big_tips bbTips,
+        b.small_tips bsTips,
+        b.free_rate freeRate,
+        b.pay_rate payRate,
+        b.quantity ,
+        c.tip_id tipId,
+        c.activity_id taId,
+        c.big_tips bigTips,
+        c.small_tips smallTips
+        FROM (
+        SELECT g.*
+        FROM bw_baseInfo g LEFT JOIN bw_gridItem b on g.activity_id = b.activity_id
+        WHERE g.start_time &lt; NOW()
+        AND g.end_time &gt; NOW()
+        AND g.online = 1
+        AND b.grid_name IS NOT NULL
+        AND g.activity_id = #{activityId}
+        ORDER BY g.created_time DESC
+        LIMIT 1
+        ) a
+        LEFT JOIN bw_gridItem b on a.activity_id = b.activity_id
+        LEFT JOIN bw_goodTips c on a.activity_id = c.activity_id
+
+    </select>
+    <select id="getServiceBySystem"  parameterType="String" resultMap="detailMap">
+        SELECT a.activity_id activityId,
+        a.activity_name activityName,
+        a.start_time startTime,
+        a.end_time endTime,
+        a.description,
+        a.published_by publishedBy,
+        a.used_score usedScore,
+        a.free_times freeTimes,
+        a.online,
+        a.activity_url activityUrl,
+        a.created_by createdBy,
+        b.item_id itemId,
+        b.activity_id baId,
+        b.sequence,
+        b.grid_name gridName,
+        b.bonus_type bonusType,
+        b.bonus,
+        b.bonus_name bonusName,
+        b.bonus_pictureUrl bonusPictureUrl,
+        b.webp_url webpUrl,
+        b.big_tips bbTips,
+        b.small_tips bsTips,
+        b.free_rate freeRate,
+        b.pay_rate payRate,
+        b.quantity ,
+        c.tip_id tipId,
+        c.activity_id taId,
+        c.big_tips bigTips,
+        c.small_tips smallTips
+        FROM (
+        SELECT g.*
+        FROM bw_baseInfo g LEFT JOIN bw_gridItem b on g.activity_id = b.activity_id
+        WHERE g.start_time &lt; NOW()
+               AND g.end_time &gt; NOW()
+               AND g.online = 1
+               AND b.grid_name IS NOT NULL
+               AND g.system = #{system}
+        ORDER BY g.created_time DESC
+        LIMIT 1
+        ) a
+        LEFT JOIN bw_gridItem b on a.activity_id = b.activity_id
+        LEFT JOIN bw_goodTips c on a.activity_id = c.activity_id
+
+    </select>
+
+    <select id="getSystems" resultType="String">
+        SELECT system
+        FROM bw_system
+        ORDER BY id
+    </select>
+    <select id="getOnlineAct"  resultMap="detailMap">
+        SELECT a.activity_id activityId,
+        a.activity_name activityName,
+        a.start_time startTime,
+        a.end_time endTime,
+        a.description,
+        a.published_by publishedBy,
+        a.used_score usedScore,
+        a.free_times freeTimes,
+        a.online,
+        a.activity_url activityUrl,
+        a.created_by createdBy,
+        b.item_id itemId,
+        b.activity_id baId,
+        b.sequence,
+        b.grid_name gridName,
+        b.bonus_type bonusType,
+        b.bonus,
+        b.bonus_name bonusName,
+        b.bonus_pictureUrl bonusPictureUrl,
+        b.webp_url webpUrl,
+        b.big_tips bbTips,
+        b.small_tips bsTips,
+        b.free_rate freeRate,
+        b.pay_rate payRate,
+        b.quantity ,
+        c.tip_id tipId,
+        c.activity_id taId,
+        c.big_tips bigTips,
+        c.small_tips smallTips
+        FROM (
+            SELECT g.*
+                    FROM bw_baseInfo g LEFT JOIN bw_gridItem b on g.activity_id = b.activity_id
+                    WHERE g.start_time &lt; NOW() AND g.end_time &gt; NOW() AND g.online = 1 AND b.grid_name IS NOT NULL
+                    ORDER BY g.created_time DESC
+                    LIMIT 1
+             ) a
+        LEFT JOIN bw_gridItem b on a.activity_id = b.activity_id
+        LEFT JOIN bw_goodTips c on a.activity_id = c.activity_id
+
+    </select>
+    <update id="updateActivity" parameterType="com.biostime.swisse.web.util.bean.ActivityReq">
+        UPDATE bw_baseInfo
+        SET activity_name = #{activityName},
+            start_time =    #{startTime},
+            end_time =      #{endTime} ,
+            description =   #{description},
+            published_by = #{publishedBy},
+            used_score = #{usedScore},
+            free_times = #{freeTimes} ,
+            online = #{online}        ,
+            activity_url = #{activityUrl} ,
+            updated_by = #{createdBy}
+        WHERE activity_id = #{activityId}
+    </update>
+
+    <delete id="deleteActivityItem" parameterType="long" >
+        DELETE FROM bw_baseInfo WHERE activity_id = #{activityId}
+    </delete>
+
+    <update id="setOnline" parameterType="com.biostime.swisse.web.util.bean.OnlineReq">
+        UPDATE bw_baseInfo
+        SET online = #{online}
+        WHERE activity_id = #{activityId}
+    </update>
+
+
+</mapper>

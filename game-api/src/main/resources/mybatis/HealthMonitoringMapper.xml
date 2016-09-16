@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.biostime.swisse.model.bean.HealthMonitoring">
+    <resultMap id="healthMonitor" type="com.biostime.swisse.model.bean.HealthMonitoring" >
+        <id column="id" property="id" />
+        <result column="createdTime" property="createdTime" jdbcType="TIMESTAMP" />
+    </resultMap>
+    <select id="getHealthInfo" parameterType="com.biostime.swisse.web.util.bean.HealthInfoReq" resultMap="healthMonitor" >
+        SELECT id,ip, system, info_type, message, url, terminal, activity_name, created_time createdTime
+        FROM bw_healthMonitoring
+        WHERE 1 = 1
+        <if test="startTime != null" >
+         AND created_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null" >
+            AND created_time &lt;= #{endTime}
+        </if>
+        <if test="system !=null" >
+            AND system = #{system}
+        </if>
+    </select>
+    <insert id="insertHealthInfo" parameterType="com.biostime.swisse.model.bean.HealthMonitoring" >
+        INSERT INTO bw_healthMonitoring (
+        ip, system, info_type, message, url, terminal, activity_name
+        ) VALUES(#{ip}, #{system}, #{infoType}, #{message}, #{url}, #{terminal}, #{activityName})
+    </insert>
+</mapper>

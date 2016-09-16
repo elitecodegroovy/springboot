@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.biostime.swisse.model.bean.GridItem">
+    <insert id="createActivity" parameterType="com.biostime.swisse.model.bean.BaseInfo" >
+        INSERT INTO bw_baseInfo (
+                activity_name,
+                activity_url,
+                created_by,
+                description,
+                end_time,
+                free_times,
+                online,
+                published_by,
+                start_time,
+                used_score,
+                created_time,
+                system
+        ) VALUES (
+                #{activityName},
+                #{activityUrl},
+                #{createdBy},
+                #{description},
+                #{endTime},
+                #{freeTimes},
+                #{online},
+                #{publishedBy},
+                #{startTime},
+                #{usedScore},
+                NOW(),
+                #{system}
+        )
+    </insert>
+    <insert id="logBaseInfo" parameterType="com.biostime.swisse.model.bean.BaseInfo" >
+        INSERT INTO log_baseInfo (
+        activity_id,
+        activity_name,
+        activity_url,
+        created_by,
+        description,
+        end_time,
+        free_times,
+        online,
+        published_by,
+        start_time,
+        used_score,
+        created_time
+        ) VALUES (
+        #{activityId},
+        #{activityName},
+        #{activityUrl},
+        #{createdBy},
+        #{description},
+        #{endTime},
+        #{freeTimes},
+        #{online},
+        #{publishedBy},
+        #{startTime},
+        #{usedScore},
+        NOW()
+        )
+    </insert>
+    <insert id="createActivityItem" parameterType="com.biostime.swisse.model.bean.GridItem" >
+        INSERT INTO bw_gridItem(
+            activity_id,
+            sequence,
+            grid_name,
+            bonus_type,
+            bonus,
+            bonus_name,
+            bonus_pictureUrl,
+            webp_url,
+            big_tips,
+            small_tips,
+            free_rate,
+            pay_rate,
+            quantity,
+            total_quantity
+        ) VALUES (
+            #{activityId},
+            #{sequence},
+            #{gridName},
+            #{bonusType},
+            #{bonus},
+            #{bonusName},
+            #{bonusPictureUrl},
+            #{webpUrl},
+            #{bigTips},
+            #{smallTips},
+            #{freeRate},
+            #{payRate},
+            #{quantity}
+        <choose>
+            <when test="totalQuantity == 0">
+              , #{quantity}
+            </when>
+            <otherwise>
+                , #{totalQuantity}
+            </otherwise>
+        </choose>
+        )
+    </insert>
+    <insert id="logActivityItem" parameterType="com.biostime.swisse.model.bean.GridItem" >
+        INSERT INTO log_gridItem(item_id,
+        activity_id,
+        sequence,
+        grid_name,
+        bonus_type,
+        bonus,
+        bonus_name,
+        bonus_pictureUrl,
+        webp_url,
+        big_tips,
+        small_tips,
+        free_rate,
+        pay_rate,
+        quantity,
+         total_quantity
+        ) VALUES (
+        #{itemId},
+        #{activityId},
+        #{sequence},
+        #{gridName},
+        #{bonusType},
+        #{bonus},
+        #{bonusName},
+        #{bonusPictureUrl},
+        #{webpUrl},
+        #{bigTips},
+        #{smallTips},
+        #{freeRate},
+        #{payRate},
+        #{quantity},
+        #{quantity}
+        )
+    </insert>
+    <insert id="createGoodTips" parameterType="com.biostime.swisse.model.bean.GoodTips" >
+        INSERT INTO bw_goodTips (activity_id, big_tips, small_tips
+        ) VALUES (#{activityId}, #{bigTips}, #{smallTips})
+    </insert>
+
+    <insert id="logGoodTips" parameterType="com.biostime.swisse.model.bean.GoodTips" >
+        INSERT INTO log_goodTips (tip_id, activity_id, big_tips, small_tips
+        ) VALUES (#{tipId},#{activityId}, #{bigTips}, #{smallTips})
+    </insert>
+    <update id="updateGrid" parameterType="com.biostime.swisse.model.bean.GridItem" >
+        UPDATE bw_gridItem
+        SET grid_name = #{gridName},
+            bonus_type = #{bonusType},
+            bonus_name = #{bonusName},
+            bonus = #{bonus},
+            bonus_pictureUrl = #{bonusPictureUrl},
+            webp_url = #{webpUrl},
+            big_tips = #{bigTips},
+            small_tips = #{smallTips},
+            free_rate = #{freeRate},
+            pay_rate = #{payRate},
+            quantity = #{quantity},
+            total_quantity = #{totalQuantity},
+            updated_by = #{updatedBy}
+        WHERE item_id = #{itemId}
+    </update>
+
+    <update id="updateQuantityOfBonus" parameterType="HashMap">
+        UPDATE bw_gridItem
+        SET quantity = #{quantity}
+        WHERE item_id = #{itemId}
+    </update>
+
+    <update id="rollbackGridItemNum" parameterType="long" >
+        UPDATE bw_gridItem
+        SET quantity = quantity + 1
+        WHERE item_id = #{itemId}
+    </update>
+
+    <update id="updateGoodTips" parameterType="com.biostime.swisse.model.bean.GoodTips" >
+        UPDATE  bw_goodTips
+        SET  big_tips = #{bigTips},
+              small_tips = #{smallTips}
+        WHERE tip_id = #{tipId}
+    </update>
+
+    <delete id="deleteGridItems" parameterType="long" >
+        DELETE FROM bw_gridItem WHERE activity_id = #{activityId}
+    </delete>
+
+    <delete id="deleteGoodTip" parameterType="long" >
+        DELETE FROM bw_goodTips WHERE activity_id = #{activityId}
+    </delete>
+    <resultMap id="baseInfoMap" type="com.biostime.swisse.model.bean.BaseInfo" >
+        <id column="activityId" property="activityId" />
+        <result column="activityName" property="activityName" />
+        <result column="status" property="status" />
+        <result column="description" property="description" />
+        <result column="usedScore" property="usedScore" />
+        <result column="publishedBy" property="publishedBy" />
+        <result column="freeTimes" property="freeTimes" />
+        <result column="online" property="online" />
+        <result column="activityUrl" property="activityUrl" />
+        <result column="createdBy" property="createdBy" />
+        <result column="system" property="system" />
+        <result column="status" property="status" />
+        <result column="createdTime" property="createdTime" jdbcType="TIMESTAMP" />
+        <result column="startTime" property="startTime" jdbcType="TIMESTAMP" />
+        <result column="endTime" property="endTime" jdbcType="TIMESTAMP" />
+    </resultMap>
+     <select id="queryActivityByActivityId" parameterType="long" resultMap = "baseInfoMap">
+         SELECT activity_id activityId ,
+                activity_name activityName ,
+                start_time startTime ,
+                end_time endTime ,
+                description ,
+                published_by publishedBy ,
+                used_score usedScore ,
+                free_times freeTimes ,
+                online ,
+                activity_url activityUrl ,
+                created_by createdBy ,
+                created_time createdTime ,
+                system,
+                status
+         FROM bw_baseInfo
+         WHERE activity_id = #{activityId}
+     </select>
+    <select id="queryGridsByActivityId" parameterType="long" resultType="com.biostime.swisse.model.bean.GridItem">
+        SELECT item_id itemId,
+                activity_id activityId,
+                sequence,
+                grid_name gridName,
+                bonus_type bonusType,
+                bonus,
+                bonus_name bonusName,
+                bonus_pictureUrl bonusPictureUrl,
+                webp_url webpUrl,
+                big_tips bigTips,
+                small_tips smallTips,
+                free_rate freeRate,
+                pay_rate payRate,
+                quantity
+       FROM bw_gridItem
+       WHERE activity_id = #{activityId}
+    </select>
+    <select id="queryTipsByActivityId" parameterType="long" resultType="com.biostime.swisse.model.bean.GoodTips">
+        SELECT tip_id tipId,
+                activity_id activityId,
+                big_tips bigTips,
+                small_tips smallTips
+        FROM bw_goodTips
+        WHERE activity_id = #{activityId}
+    </select>
+    <select id="getQuantity" parameterType="long" resultType="int">
+        SELECT quantity
+        FROM bw_gridItem
+        WHERE item_id = #{itemId}
+    </select>
+</mapper>

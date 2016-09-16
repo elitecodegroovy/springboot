@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	   xmlns:p="http://www.springframework.org/schema/p" xmlns:context="http://www.springframework.org/schema/context"
+	   xmlns:tx="http://www.springframework.org/schema/tx" xmlns:mvc="http://www.springframework.org/schema/mvc"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+       http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+       ">
+
+	<context:property-placeholder
+			location="classpath:/dev/*.properties" ignore-resource-not-found="true" />
+
+	<!-- spring托管的注解类 -->
+	<context:component-scan base-package="com.biostime.swisse.web">
+		<context:exclude-filter type="annotation"
+								expression="org.springframework.stereotype.Controller" />
+	</context:component-scan>
+	<context:component-scan base-package="com.biostime.swisse.model.repository" >
+		<context:exclude-filter type="annotation"
+								expression="org.springframework.stereotype.Controller" />
+	</context:component-scan>
+
+	<context:component-scan base-package="com.mama100.common.listener" />
+	<!-- mysql 连接 -->
+	<bean id="myBatisDataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close">
+		<property name="driverClass" value="${datasource.mysql.driver}" />
+		<property name="jdbcUrl" value="${datasource.mysql.url}" />
+		<property name="user" value="${datasource.mysql.user}" />
+		<property name="password" value="${datasource.mysql.password}" />
+
+		<property name="acquireIncrement" value="${datasource.mysql.acquireIncrement}"/>
+		<property name="initialPoolSize" value="${datasource.mysql.initialPoolSize}"/>
+		<property name="maxIdleTime" value="${datasource.mysql.maxIdleTime}"/>
+		<property name="maxPoolSize" value="${datasource.mysql.maxPoolSize}"/>
+		<property name="minPoolSize" value="${datasource.mysql.minPoolSize}"/>
+		<property name="acquireRetryDelay" value="${datasource.mysql.acquireRetryDelay}"/>
+		<property name="acquireRetryAttempts" value="${datasource.mysql.acquireRetryAttempts}"/>
+		<!--<property name="breakAfterAcquireFailure" value="${datasource.mysql.breakAfterAcquireFailure}"></property>-->
+	</bean>
+
+	<!--<bean id="myBatisDataSource" class="com.alibaba.druid.pool.DruidDataSource"-->
+		  <!--init-method="init" destroy-method="close">-->
+		<!--&lt;!&ndash; 数据库基本信息配置 &ndash;&gt;-->
+		<!--<property name="driverClassName" value="${datasource.mysql.driver}" />-->
+		<!--<property name="url" value="${datasource.mysql.url}" />-->
+		<!--<property name="username" value="${datasource.mysql.user}" />-->
+		<!--<property name="password" value="${datasource.mysql.password}" />-->
+		<!--&lt;!&ndash; 初始化连接数量 &ndash;&gt;-->
+		<!--<property name="initialSize" value="${druid.initialSize}" />-->
+		<!--&lt;!&ndash; 最大并发连接数 &ndash;&gt;-->
+		<!--<property name="maxActive" value="${druid.maxActive}" />-->
+		<!--&lt;!&ndash; 最大空闲连接数 &ndash;&gt;-->
+		<!--&lt;!&ndash;  <property name="maxIdle" value="${druid.maxIdle}" />&ndash;&gt;-->
+		<!--&lt;!&ndash; 最小空闲连接数 &ndash;&gt;-->
+		<!--<property name="minIdle" value="${druid.minIdle}" />-->
+		<!--&lt;!&ndash; 配置获取连接等待超时的时间 &ndash;&gt;-->
+		<!--<property name="maxWait" value="${druid.maxWait}" />-->
+		<!--&lt;!&ndash; 超过时间限制是否回收 &ndash;&gt;-->
+		<!--<property name="removeAbandoned" value="${druid.removeAbandoned}" />-->
+		<!--&lt;!&ndash; 超过时间限制多长； &ndash;&gt;-->
+		<!--<property name="removeAbandonedTimeout" value="${druid.removeAbandonedTimeout}" />-->
+		<!--&lt;!&ndash; 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 &ndash;&gt;-->
+		<!--<property name="timeBetweenEvictionRunsMillis" value="${druid.timeBetweenEvictionRunsMillis}" />-->
+		<!--&lt;!&ndash; 配置一个连接在池中最小生存的时间，单位是毫秒 &ndash;&gt;-->
+		<!--<property name="minEvictableIdleTimeMillis" value="${druid.minEvictableIdleTimeMillis}" />-->
+		<!--&lt;!&ndash; 用来检测连接是否有效的sql，要求是一个查询语句&ndash;&gt;-->
+		<!--<property name="validationQuery" value="${druid.validationQuery}" />-->
+		<!--&lt;!&ndash; 申请连接的时候检测 &ndash;&gt;-->
+		<!--<property name="testWhileIdle" value="${druid.testWhileIdle}" />-->
+		<!--&lt;!&ndash; 申请连接时执行validationQuery检测连接是否有效，配置为true会降低性能 &ndash;&gt;-->
+		<!--<property name="testOnBorrow" value="${druid.testOnBorrow}" />-->
+		<!--&lt;!&ndash; 归还连接时执行validationQuery检测连接是否有效，配置为true会降低性能  &ndash;&gt;-->
+		<!--<property name="testOnReturn" value="${druid.testOnReturn}" />-->
+		<!--&lt;!&ndash; 打开PSCache，并且指定每个连接上PSCache的大小 &ndash;&gt;-->
+		<!--<property name="poolPreparedStatements" value="${druid.poolPreparedStatements}" />-->
+		<!--<property name="maxPoolPreparedStatementPerConnectionSize" value="${druid.maxPoolPreparedStatementPerConnectionSize}" />-->
+		<!--&lt;!&ndash;属性类型是字符串，通过别名的方式配置扩展插件，常用的插件有：-->
+                <!--监控统计用的filter:stat-->
+                <!--日志用的filter:log4j-->
+                <!--防御SQL注入的filter:wall &ndash;&gt;-->
+		<!--<property name="filters" value="${druid.filters}" />-->
+	<!--</bean>-->
+
+	<bean id="mysqlJdbcTemplate"
+		  class="org.springframework.jdbc.core.JdbcTemplate" abstract="false"
+		  lazy-init="false" autowire="default">
+		<property name="dataSource" ref="myBatisDataSource" />
+	</bean>
+
+
+	<!-- mysql data source session -->
+	<bean id="dataSourceSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean" >
+		<property name="dataSource" ref="myBatisDataSource"/>
+		<property name="configLocation" value="classpath:mybatis/mybatis-config.xml" />
+		<property name="mapperLocations" value="classpath:mybatis/*Mapper.xml" />
+	</bean>
+
+	<bean id="sqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
+		<constructor-arg index="0" ref="dataSourceSessionFactory" />
+	</bean>
+
+	<!--spring transaction manager-->
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="myBatisDataSource" />
+	</bean>
+	<tx:annotation-driven transaction-manager="transactionManager" proxy-target-class="true"/>
+
+	<!--image configuration-->
+	<bean class="com.biostime.swisse.web.conf.SwisseWebConf">
+		<property name="UPLOAD_ROOT" value="${upload.root}"/>
+		<property name="UPLOAD_HOST" value="${upload.host}"/>
+		<property name="MERCH_IMG_HOST" value="${merch.img.host}"/>
+	</bean>
+	<!--缓存-->
+	<import resource="classpath:/META-INF/spring/distributed-cache.xml" />
+	<!-- RPC Services -->
+	<import resource="classpath:/META-INF/spring/spring-rpc.xml" />
+
+	<bean id="distributedLock" class="com.biostime.swisse.web.util.ClientDistributedLock" init-method="init">
+		<property name="zookeeperNodes" value="${swisse.zookeeper.url}"/>
+	</bean>
+</beans>

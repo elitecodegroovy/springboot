@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:cache= "http://www.springframework.org/schema/cache"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+        http://www.springframework.org/schema/cache
+        http://www.springframework.org/schema/cache/spring-cache-4.0.xsd
+		http://www.springframework.org/schema/aop 
+		http://www.springframework.org/schema/aop/spring-aop-4.0.xsd">
+    <aop:aspectj-autoproxy proxy-target-class="true"/>
+
+    <!-- redis 共享池 -->
+    <bean id="shardedJedisPool" class="redis.clients.jedis.ShardedJedisPool">
+        <constructor-arg index="0" ref="jedisPoolConfig"/>
+        <constructor-arg index="1">
+            <list>
+                <bean name="slaver" class="redis.clients.jedis.JedisShardInfo">
+                    <constructor-arg index="0" value="${redis.master.host}"/>
+                    <constructor-arg index="1" value="${redis.master.port}" type="int"/>
+                    <constructor-arg index="2" value="${redis.master.timeout}" type="int"/>
+                </bean>
+                <bean name="master" class="redis.clients.jedis.JedisShardInfo">
+                    <constructor-arg index="0" value="${redis.slaver.host}"/>
+                    <constructor-arg index="1" value="${redis.slaver.port}" type="int"/>
+                    <constructor-arg index="2" value="${redis.slaver.timeout}" type="int"/>
+                </bean>
+            </list>
+        </constructor-arg>
+    </bean>
+
+    <bean id="shardedJedisWritePool" class="redis.clients.jedis.ShardedJedisPool">
+        <constructor-arg index="0" ref="jedisPoolConfig"/>
+        <constructor-arg index="1">
+            <list>
+                <bean name="slaver" class="redis.clients.jedis.JedisShardInfo">
+                    <constructor-arg index="0" value="${redis.master.host}"/>
+                    <constructor-arg index="1" value="${redis.master.port}" type="int"/>
+                    <constructor-arg index="2" value="${redis.master.timeout}" type="int"/>
+                </bean>
+            </list>
+        </constructor-arg>
+    </bean>
+
+    <!-- redis 连接池配置  -->
+    <bean id="jedisPoolConfig" class="redis.clients.jedis.JedisPoolConfig">
+        <property name="maxTotal" value="${redis.pool.maxActive}" />
+        <property name="maxIdle" value="${redis.pool.maxIdle}" />
+        <property name="minIdle" value="${redis.pool.minIdle}" />
+        <property name="numTestsPerEvictionRun" value="1024"/>
+        <property name="timeBetweenEvictionRunsMillis" value="30000" />
+        <property name="minEvictableIdleTimeMillis" value="-1" />
+        <property name="softMinEvictableIdleTimeMillis" value="10000" />
+        <property name="maxWaitMillis" value="${redis.pool.maxWaitMillis}"/>
+        <property name="testOnBorrow" value="${redis.pool.testOnBorrow}" />
+        <property name="testWhileIdle" value="${redis.pool.testOnReturn}"/>
+        <property name="testOnReturn" value="false"/>
+        <property name="blockWhenExhausted" value="false"/>
+    </bean>
+
+
+    <!-- jedis 连接配置-->
+    <bean id="jedisConfig" class="org.apache.commons.pool2.impl.GenericObjectPoolConfig">
+        <property name="maxTotal" value="${redis.pool.maxActive}"/>
+        <property name="maxIdle" value="${redis.pool.maxIdle}"/>
+        <property name="minIdle" value="${redis.pool.minIdle}"/>
+        <property name="maxWaitMillis" value="${redis.pool.maxWaitMillis}"/>
+        <property name="testOnBorrow" value="${redis.pool.testOnBorrow}"/>
+        <property name="testOnReturn" value="${redis.pool.testOnReturn}"/>
+    </bean>
+
+    <!-- jedis cluster master client settings -->
+    <bean id="writerClient" class="com.mama100.cache.redis.cluster.RedisClusterMasterClient" init-method="init">
+        <property name="node" value="${redos_cluster.master.node}"/>
+        <property name="timeout" value="${redis.cluster.timeout}"/>
+        <property name="maxRedirections" value="${redis.cluster.maxRedirections}"/>
+        <property name="config">
+            <ref bean="jedisConfig" />
+        </property>
+    </bean>
+
+    <!-- jedis cluster slave client settings -->
+    <bean id="readerClient" class="com.mama100.cache.redis.cluster.RedisClusterSlaveClient" init-method="init" >
+        <property name="node" value="${redos_cluster.slave.node}"/>
+        <property name="timeout" value="${redis.cluster.timeout}"/>
+        <property name="maxRedirections" value="${redis.cluster.maxRedirections}"/>
+        <property name="config">
+            <ref bean="jedisConfig" />
+        </property>
+    </bean>
+
+    <bean id="redisConf" class="com.biostime.swisse.web.conf.RedisConf" >
+        <property name="commonExpiration" value="${redis.cluster.timeout}"/>
+        <property name="onlineServiceExpiration" value="${redis.onlineServiceTimeOut}" />
+    </bean>
+</beans>

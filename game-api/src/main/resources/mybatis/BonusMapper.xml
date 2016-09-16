@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.biostime.swisse.model.bean.Bonus">
+    <resultMap id="bonusItemResult" type="com.biostime.swisse.model.bean.BonusItem" >
+        <id column="id" property="id" />
+        <result column="bonus_id" property="bonusId" />
+        <result column="bonus" property="bonus" />
+        <result column="bonus_url" property="bonusUrl" />
+        <result column="bonus_webpUrl" property="bonusWebpUrl" />
+        <!--<result column="endTime" property="endTime" jdbcType="TIMESTAMP" />-->
+    </resultMap>
+
+    <resultMap  id="bonusResult" type="com.biostime.swisse.model.bean.Bonus">
+        <id column="bId" property="bonusId"/>
+        <result column="bonus_type" property="bonusType"/>
+        <result column="bonus_name" property="bonusName"/>
+        <collection property="bonusItems" resultMap="bonusItemResult"/>
+    </resultMap>
+
+    <select id="getAll" parameterType="HashMap" resultMap="bonusResult">
+        SELECT     a.bonus_id bId,
+                    a.bonus_type,
+                    a.bonus_name,
+                    b.id,
+                    b.bonus,
+                    b.bonus_id,
+                    b.bonus_url,
+                    b.bonus_webpUrl
+        FROM bw_bonus a LEFT  JOIN bw_bonusItem b on a.bonus_id = b.bonus_id
+        WHERE 1 = 1
+            <if test="bonus_id != null">
+                AND a.bonus_id = #{bonus_id}
+            </if>
+        ORDER BY bonus_id ASC
+    </select>
+
+    <select id="getBonusType" parameterType="String" resultType="com.biostime.swisse.model.bean.Bonus">
+        SELECT a.bonus_type bonusType,
+                a.bonus_id bonusId,
+                a.bonus_name bonusName
+        FROM bw_bonus a
+        WHERE a.bonus_type = #{bonusType}
+        ORDER BY a.bonus_id
+        LIMIT 1
+    </select>
+    <insert id="createBonusType" parameterType="com.biostime.swisse.model.bean.Bonus" >
+        INSERT INTO bw_bonus(bonus_type, bonus_name)
+                     VALUES(#{bonusType}, #{bonusName})
+    </insert>
+    <insert id = "createBonusItem" parameterType="com.biostime.swisse.model.bean.BonusItem">
+        INSERT INTO bw_bonusItem(bonus, bonus_id, bonus_url, bonus_webpUrl, updated_by)
+             VALUES(#{bonus}, #{bonusId}, #{bonusUrl}, #{bonusWebpUrl}, #{updatedBy})
+    </insert>
+    <resultMap id="detailMap" type="com.biostime.swisse.model.bean.ActivityDetail" >
+        <id column="activityId" property="activityId" />
+        <result column="activityName" property="activityName" />
+        <result column="status" property="status" />
+        <result column="description" property="description" />
+        <result column="usedScore" property="usedScore" />
+        <result column="publishedBy" property="publishedBy" />
+        <result column="freeTimes" property="freeTimes" />
+        <result column="online" property="online" />
+        <result column="activityUrl" property="activityUrl" />
+        <result column="createdBy" property="createdBy" />
+        <result column="startTime" property="startTime" jdbcType="TIMESTAMP" />
+        <result column="endTime" property="endTime" jdbcType="TIMESTAMP" />
+    </resultMap>
+    <select id="getOneGameRule" parameterType="long" resultType="com.biostime.swisse.model.bean.GameRule" >
+        SELECT id,
+                activity_id activityId,
+                bonus_type bonusType,
+                bonus,
+                times,
+                type
+        FROM bw_gameRule
+        WHERE activity_id = #{activityId}
+        ORDER BY id DESC
+    </select>
+    <!--<choose>-->
+        <!--<when test="searchBy == 'Tutor'">-->
+            <!--WHERE TUTOR_ID= #{tutorId}-->
+        <!--</when>-->
+        <!--<when test="searchBy == 'CourseName'">-->
+            <!--WHERE name like #{courseName}-->
+        <!--</when>-->
+        <!--<otherwise>-->
+            <!--WHERE TUTOR start_date &gt;= now()-->
+        <!--</otherwise>-->
+    <!--</choose>-->
+</mapper>

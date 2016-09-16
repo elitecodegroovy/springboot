@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.biostime.swisse.model.bean.AskQuestion">
+    <resultMap id="questionsMap" type="com.biostime.swisse.model.bean.AskQuestion" >
+        <id column="id" property="id" />
+        <result column="createdTime" property="createdTime" jdbcType="TIMESTAMP" />
+    </resultMap>
+    <select id="getAskQuestions" parameterType="String" resultMap="questionsMap" >
+        SELECT id,
+            question,
+            right_ask rightAsk,
+            ask1,
+            ask2,
+            ask3,
+            category,
+            created_time createdTime,
+            created_by createdBy,
+            system,
+            updated_by updatedBy, priority
+        FROM bw_askQuestion
+        WHERE system = #{system}
+        ORDER BY priority DESC
+    </select>
+    <select id="getAskQuestionsById" parameterType="long" resultMap="questionsMap" >
+        SELECT id,
+        question,
+        right_ask rightAsk,
+        ask1,
+        ask2,
+        ask3,
+        category,
+        created_time createdTime,
+        created_by createdBy,
+        system,
+        updated_by updatedBy
+        FROM bw_askQuestion
+        WHERE id = #{id}
+    </select>
+
+
+</mapper>

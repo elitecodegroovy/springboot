@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+    <!-- RPC server membership -->
+    <bean id="custRpcFactory" class="com.mama100.rpc.cust.CustRpcFactory">
+        <property name="finagleClientRegister">
+            <bean class="com.mama100.common.finagle.FinagleClientRegister">
+                <property name="connectTimeout" value="10000"/><!-- 连接服务器的超时时间，默认3秒 -->
+                <property name="hostConnectionIdleTime" value="600000"/><!-- 默认10分钟，这时间内的连接会被保留。 -->
+                <property name="hostConnectionMaxIdleTime" value="900000"/><!-- 默认15分钟 -->
+                <property name="timeout" value="30000"/><!-- 默认60秒，超时时间，指整个完整请求的来回时间。 -->
+                <property name="maxRetry" value="0"/><!-- 重试次数，默认3次， -->
+                <property name="hostConnectionLimit" value="200"/><!-- 本客户端向每个host可发出的最大请求数 -->
+                <property name="hostConnectionCoresize" value="50"/><!-- 缓存保留的连接数 -->
+                <property name="namespace" value="${membership.zookeeper.namespace}"/>
+                <property name="zookeeperAddress" value="${membership.zookeeper.url}"/>
+            </bean>
+        </property>
+    </bean>
+
+    <bean id="couponRpcFactory" class="com.biostime.coupon.rpc.RpcFactory">
+        <property name="finagleClientRegister">
+            <bean class="com.mama100.common.finagle.FinagleClientRegister">
+                <property name="connectTimeout" value="5000"/><!-- 连接服务器的超时时间，默认3秒 -->
+                <property name="hostConnectionIdleTime" value="600000"/><!-- 默认10分钟，这时间内的连接会被保留。 -->
+                <property name="hostConnectionMaxIdleTime" value="900000"/><!-- 默认15分钟 -->
+                <property name="timeout" value="60000"/><!-- 默认60秒，超时时间，指整个完整请求的来回时间。 -->
+                <property name="maxRetry" value="3"/><!-- 重试次数，默认3次， -->
+                <property name="hostConnectionLimit" value="200"/><!-- 本客户端向每个host可发出的最大请求数 -->
+                <property name="hostConnectionCoresize" value="50"/><!-- 缓存保留的连接数 -->
+                <property name="namespace" value="${coupon.zookeeper.namespace}"/>
+                <property name="zookeeperAddress" value="${coupon.zookeeper.url}"/>
+            </bean>
+        </property>
+    </bean>
+
+
+    <bean id="transactionRpcFactory" class="com.biostime.transaction.rpc.TransactionRpcFactory">
+        <property name="register">
+            <bean class="com.mama100.common.finagle.FinagleClientRegister">
+                <property name="connectTimeout" value="20000"/><!-- 连接服务器的超时时间，默认3秒 -->
+                <property name="hostConnectionIdleTime" value="600000"/><!--默认10分钟，这时间内的连接会被保留。 -->
+                <property name="hostConnectionMaxIdleTime" value="900000"/><!-- 默认15分钟 -->
+                <property name="timeout" value="60000"/><!-- 默认60秒，超时时间，指整个完整请求的来回时间。 -->
+                <property name="maxRetry" value="3"/><!-- 重试次数，默认3次， -->
+                <property name="hostConnectionLimit" value="200"/><!-- 本客户端向每个host可发出的最大请求数 -->
+                <property name="hostConnectionCoresize" value="50"/><!-- 缓存保留的连接数 -->
+                <property name="namespace" value="${transaction.core.zookeeper.namespace}"/>
+                <property name="zookeeperAddress" value="${transaction.core.zookeeper.url}"/>
+            </bean>
+        </property>
+    </bean>
+</beans>

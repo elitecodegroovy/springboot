@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+ 
+<!-- Don't forget to set system property
+-DLog4jContextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector
+     to make all loggers asynchronous. --> 
+<Configuration status="ERROR">
+  <Appenders>
+    <!-- Async Loggers will auto-flush in batches, so switch off immediateFlush. -->
+    <RollingRandomAccessFile  name="RollingFile" fileName="logs/swisse.log"
+    	filePattern="logs/$${date:yyyy-MM}/app-%d{MM-dd-yyyy}-%i.log.gz" immediateFlush="false" append="true">
+      <PatternLayout>
+        <Pattern>++$${env:HOSTNAME}[%d [%t] %p %c %m %ex]++%n</Pattern>
+      </PatternLayout>
+      <Policies>
+        <TimeBasedTriggeringPolicy />
+        <SizeBasedTriggeringPolicy size="20 MB"/>
+      </Policies>
+      <DefaultRolloverStrategy max="20"/>
+    </RollingRandomAccessFile >
+    <Console name="Console" target="SYSTEM_OUT">
+      <PatternLayout pattern="++$${env:HOSTNAME}[%d [%t] %-5level %logger{36} - %msg]++%n"/>
+    </Console>
+  </Appenders>
+  <Loggers>
+    <AsyncLogger name="com.mama100" level="info" includeLocation="true">
+      <AppenderRef ref="RollingFile"/>
+    </AsyncLogger>
+    <Root level="info" includeLocation="false">
+      	<AppenderRef ref="Console"/>
+    </Root>
+  </Loggers>
+</Configuration>
